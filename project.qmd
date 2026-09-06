@@ -12,6 +12,14 @@ execute:
 
 For my final project, I plan to study how often a volleyball team comes back and wins a match after losing the first set. I will use a large dataset with volleyball matches from different seasons and leagues. Some interesting variables I plan to use are the winner of the match, the winner of the first set, the final score, and the number of sets played. I can use these variables to calculate the percentage of teams that come back after losing the first set. I also want to compare comeback rates across different leagues and see whether matches that go to four or five sets have more comebacks than shorter matches. My goal is to use the data to find patterns and answer the question, “How often does a team come back after losing the first set?".
 
+## Key Findings: Match Length & Comebacks
+
+Across **4,832 NCAA Division 1 matches**, teams that lose the first set come back to win the match **21.2%** of the time overall. As matches go longer, comeback rates increase dramatically:
+
+- **3-set matches (sweep):** **0%** comebacks (0 of 2,301 matches)
+- **4-set matches (3–1 win):** **33.2%** comebacks (505 of 1,522 matches)
+- **5-set matches (3–2 win):** **51.5%** comebacks (520 of 1,009 matches)
+
 ## Comeback Rates Across NCAA Conferences
 
 *Hover over any conference to see the comeback win rate and 4-set vs. 5-set breakdown:*
