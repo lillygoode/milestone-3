@@ -1,0 +1,57 @@
+---
+title: "Volleyball Comeback Rates After Losing Set 1"
+author: "Lilly Goode"
+format: html
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Final Project Plan
+
+For my final project, I plan to study how often a volleyball team comes back and wins a match after losing the first set. I will use a large dataset with volleyball matches from different seasons and leagues. Some interesting variables I plan to use are the winner of the match, the winner of the first set, the final score, and the number of sets played. I can use these variables to calculate the percentage of teams that come back after losing the first set. I also want to compare comeback rates across different leagues and see whether matches that go to four or five sets have more comebacks than shorter matches. My goal is to use the data to find patterns and answer the question, “How often does a team come back after losing the first set?".
+
+## Comeback Rates Across Leagues and Match Lengths
+
+```{r}
+library(tidyverse)
+library(scales)
+
+vb_data <- read_csv("data/volleyball_matches.csv", show_col_types = FALSE)
+
+league_summary <- vb_data |>
+  group_by(league) |>
+  summarise(
+    total_matches = n(),
+    comebacks = sum(comeback_win),
+    comeback_pct = mean(comeback_win),
+    .groups = "drop"
+  )
+
+ggplot(league_summary, aes(x = comeback_pct, y = fct_reorder(league, comeback_pct))) +
+  geom_col(fill = "steelblue", width = 0.6) +
+  geom_text(
+    aes(label = percent(comeback_pct, accuracy = 0.1)),
+    hjust = -0.1,
+    size = 3.5
+  ) +
+  scale_x_continuous(
+    labels = percent_format(),
+    limits = c(0, 0.35),
+    expand = expansion(mult = c(0, 0.05))
+  ) +
+  labs(
+    title = "Percentage of Matches Won After Losing the First Set",
+    subtitle = "Comparing comeback rates across professional and international volleyball leagues",
+    x = "Comeback Percentage",
+    y = NULL,
+    caption = "Data: 1,681 matches from VNL & Italian Serie A / SuperLega (2023-2024)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank()
+  )
+```
