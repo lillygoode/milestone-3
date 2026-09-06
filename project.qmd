@@ -12,11 +12,13 @@ execute:
 
 For my final project, I plan to study how often a volleyball team comes back and wins a match after losing the first set. I will use a large dataset with volleyball matches from different seasons and leagues. Some interesting variables I plan to use are the winner of the match, the winner of the first set, the final score, and the number of sets played. I can use these variables to calculate the percentage of teams that come back after losing the first set. I also want to compare comeback rates across different leagues and see whether matches that go to four or five sets have more comebacks than shorter matches. My goal is to use the data to find patterns and answer the question, “How often does a team come back after losing the first set?".
 
-## Comeback Rates Across Leagues and Match Lengths
+## Comeback Rates Across Leagues
+
+*Hover over any bar to view the exact comeback win rate and match length breakdown:*
 
 ```{r}
 library(tidyverse)
-library(scales)
+library(plotly)
 
 vb_data <- read_csv("data/volleyball_matches.csv", show_col_types = FALSE)
 
@@ -25,33 +27,47 @@ league_summary <- vb_data |>
   summarise(
     total_matches = n(),
     comebacks = sum(comeback_win),
-    comeback_pct = mean(comeback_win),
+    comeback_pct = mean(comeback_win) * 100,
+    comebacks_4set = sum(comeback_win & sets_played == 4),
+    comebacks_5set = sum(comeback_win & sets_played == 5),
     .groups = "drop"
+  ) |>
+  mutate(
+    tooltip_text = paste0(
+      "<b>", league, "</b><br>",
+      "Comeback Win Rate: <b>", round(comeback_pct, 1), "%</b><br>",
+      "Total Comebacks: ", comebacks, " of ", total_matches, " matches<br>",
+      "• Won in 4 Sets (3-1): ", comebacks_4set, "<br>",
+      "• Won in 5 Sets (3-2): ", comebacks_5set
+    )
   )
 
-ggplot(league_summary, aes(x = comeback_pct, y = fct_reorder(league, comeback_pct))) +
-  geom_col(fill = "steelblue", width = 0.6) +
-  geom_text(
-    aes(label = percent(comeback_pct, accuracy = 0.1)),
-    hjust = -0.1,
-    size = 3.5
-  ) +
+p <- ggplot(league_summary, aes(
+  x = comeback_pct,
+  y = fct_reorder(league, comeback_pct),
+  fill = comeback_pct,
+  text = tooltip_text
+)) +
+  geom_col(width = 0.65, show.legend = FALSE) +
+  scale_fill_gradient(low = "#5dade2", high = "#1b4f72") +
   scale_x_continuous(
-    labels = percent_format(),
-    limits = c(0, 0.35),
+    labels = \(x) paste0(x, "%"),
+    limits = c(0, 32),
     expand = expansion(mult = c(0, 0.05))
   ) +
   labs(
-    title = "Percentage of Matches Won After Losing the First Set",
-    subtitle = "Comparing comeback rates across professional and international volleyball leagues",
-    x = "Comeback Percentage",
-    y = NULL,
-    caption = "Data: 1,681 matches from VNL & Italian Serie A / SuperLega (2023-2024)"
+    title = "Percentage of Matches Won After Losing Set 1",
+    x = "Comeback Win Rate (%)",
+    y = NULL
   ) +
-  theme_minimal() +
+  theme_minimal(base_size = 12) +
   theme(
-    plot.title = element_text(face = "bold", size = 14),
+    plot.title = element_text(face = "bold", size = 13),
     panel.grid.minor = element_blank(),
     panel.grid.major.y = element_blank()
   )
+
+ggplotly(p, tooltip = "text") |>
+  config(displayModeBar = FALSE)
 ```
+
