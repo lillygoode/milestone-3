@@ -1,5 +1,5 @@
 ---
-title: "Volleyball Comeback Rates After Losing Set 1"
+title: "NCAA Volleyball Comeback Rates After Losing Set 1"
 author: "Lilly Goode"
 format: html
 execute:
@@ -12,18 +12,19 @@ execute:
 
 For my final project, I plan to study how often a volleyball team comes back and wins a match after losing the first set. I will use a large dataset with volleyball matches from different seasons and leagues. Some interesting variables I plan to use are the winner of the match, the winner of the first set, the final score, and the number of sets played. I can use these variables to calculate the percentage of teams that come back after losing the first set. I also want to compare comeback rates across different leagues and see whether matches that go to four or five sets have more comebacks than shorter matches. My goal is to use the data to find patterns and answer the question, “How often does a team come back after losing the first set?".
 
-## Comeback Rates Across Leagues
+## Comeback Rates Across NCAA Conferences
 
-*Hover over any bar to view the exact comeback win rate and match length breakdown:*
+*Hover over any conference to see the comeback win rate and 4-set vs. 5-set breakdown:*
 
 ```{r}
 library(tidyverse)
 library(plotly)
 
-vb_data <- read_csv("data/volleyball_matches.csv", show_col_types = FALSE)
+vb_data <- read_csv("data/ncaa_volleyball_matches.csv", show_col_types = FALSE)
 
-league_summary <- vb_data |>
-  group_by(league) |>
+conf_summary <- vb_data |>
+  filter(conference_match != "Non-Conference") |>
+  group_by(conference = conference_match) |>
   summarise(
     total_matches = n(),
     comebacks = sum(comeback_win),
@@ -32,35 +33,36 @@ league_summary <- vb_data |>
     comebacks_5set = sum(comeback_win & sets_played == 5),
     .groups = "drop"
   ) |>
+  filter(total_matches >= 90) |>
   mutate(
     tooltip_text = paste0(
-      "<b>", league, "</b><br>",
+      "<b>", conference, " Conference</b><br>",
       "Comeback Win Rate: <b>", round(comeback_pct, 1), "%</b><br>",
       "Total Comebacks: ", comebacks, " of ", total_matches, " matches<br>",
-      "• Won in 4 Sets (3-1): ", comebacks_4set, "<br>",
-      "• Won in 5 Sets (3-2): ", comebacks_5set
+      "• 4-Set Comebacks (3-1): ", comebacks_4set, "<br>",
+      "• 5-Set Comebacks (3-2): ", comebacks_5set
     )
   )
 
-p <- ggplot(league_summary, aes(
+p <- ggplot(conf_summary, aes(
   x = comeback_pct,
-  y = fct_reorder(league, comeback_pct),
+  y = fct_reorder(conference, comeback_pct),
   fill = comeback_pct,
   text = tooltip_text
 )) +
   geom_col(width = 0.65, show.legend = FALSE) +
-  scale_fill_gradient(low = "#5dade2", high = "#1b4f72") +
+  scale_fill_gradient(low = "#74add1", high = "#08306b") +
   scale_x_continuous(
     labels = \(x) paste0(x, "%"),
     limits = c(0, 32),
     expand = expansion(mult = c(0, 0.05))
   ) +
   labs(
-    title = "Percentage of Matches Won After Losing Set 1",
+    title = "NCAA Women’s Volleyball: Comeback Rates After Losing Set 1",
     x = "Comeback Win Rate (%)",
     y = NULL
   ) +
-  theme_minimal(base_size = 12) +
+  theme_minimal(base_size = 11) +
   theme(
     plot.title = element_text(face = "bold", size = 13),
     panel.grid.minor = element_blank(),
